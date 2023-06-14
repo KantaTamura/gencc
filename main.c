@@ -46,24 +46,14 @@ Token *token;
 // 入力プログラム
 char *user_input;
 
-// エラーを報告するための関数
-// printfと同じ引数を取る
-void error(char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
-    exit(1);
-}
-
 // エラー箇所を報告する
-void error_at(char *loc, char *fmt, ...) {
+void error_at(const char *loc, char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
 
     long pos = loc - user_input;
     fprintf(stderr, "%s\n", user_input);
-    fprintf(stderr, "%*s", pos, ""); // pos個の空白を出力
+    fprintf(stderr, "%*s", (int)pos, ""); // pos個の空白を出力
     fprintf(stderr, "^ ");
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
@@ -101,11 +91,6 @@ long expect_number() {
     long val = token->val;
     token = token->next;
     return val;
-}
-
-// 入力の終わりに達したかどうかを返す．
-bool at_eof() {
-    return token->kind == TK_EOF;
 }
 
 // 新しいトークンを作成してcurに繋げる．
