@@ -78,8 +78,8 @@ bool consume(char *op) {
 
 // 次のトークンが期待している記号のときは，トークンを1つ読み進める．
 // それ以外の場合にはエラーを報告する．
-void expect(char op) {
-    if (token->kind != TK_RESERVED || token->str[0] != op) {
+void expect(char *op) {
+    if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0) {
         error_at(token->str, "'%c'ではありません", op);
     }
 
@@ -264,7 +264,7 @@ Node *primary() {
     // 次のトークンが"("なら，"(" expr ")"のはず
     if (consume("(")) {
         Node *node = expr();
-        expect(')');
+        expect(")");
         return node;
     }
 
