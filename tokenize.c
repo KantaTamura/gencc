@@ -50,6 +50,11 @@ long expect_number() {
     return val;
 }
 
+// 次のトークンがEOFの場合，真を返す．
+bool at_eof() {
+    return token->kind == TK_EOF;
+}
+
 // 新しいトークンを作成してcurに繋げる．
 Token *new_token(TokenKind kind, Token *cur, char *str, long len) {
     Token *tok = calloc(1, sizeof(Token));
@@ -85,7 +90,7 @@ Token *tokenize() {
             continue;
         }
 
-        if (strchr("+-*/()<>", *p)) {
+        if (strchr("+-*/()<>;", *p)) {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
         }

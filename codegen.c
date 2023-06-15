@@ -60,10 +60,13 @@ void codegen(Node *node) {
     printf("main:\n");
 
     // 抽象構文木を下りながらコード生成
-    gen(node);
+    for (Node *n = node; n; n = n->next) {
+        gen(n);
 
-    // スタックトップに式全体の値が残っているはずなので，
-    // それをロードして関数からの返り値とする
-    printf("    pop rax\n");
+        // 式の評価結果としてスタックに一つの値が残っているはずなので，
+        // スタックが溢れないようにポップしておく
+        printf("    pop rax\n");
+    }
+
     printf("    ret\n");
 }

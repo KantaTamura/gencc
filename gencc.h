@@ -30,6 +30,7 @@ void error_at(const char *loc, char *fmt, ...);
 bool consume(char *op);
 void expect(char *op);
 long expect_number();
+bool at_eof();
 Token *new_token(TokenKind kind, Token *cur, char *str, long len);
 Token *tokenize();
 
@@ -57,12 +58,13 @@ typedef enum {
 typedef struct Node Node;
 struct Node {
     NodeKind kind; // ノードの型
+    Node *next;    // 次のノード
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
     long val;      // kindがND_NUMの場合のみ使う
 };
 
-Node *expr();
+Node *program();
 
 //
 // codegen.c
