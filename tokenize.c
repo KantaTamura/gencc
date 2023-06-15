@@ -32,7 +32,7 @@ bool consume(char *op) {
 // それ以外の場合にはエラーを報告する．
 void expect(char *op) {
     if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0) {
-        error_at(token->str, "'%c'ではありません", op);
+        error_at(token->str, "expect '%c'", op);
     }
 
     token = token->next;
@@ -42,7 +42,7 @@ void expect(char *op) {
 // それ以外の場合にはエラーを報告する．
 long expect_number() {
     if (token->kind != TK_NUM) {
-        error_at(token->str, "数ではありません");
+        error_at(token->str, "not a number");
     }
 
     long val = token->val;
@@ -103,7 +103,7 @@ Token *tokenize() {
             continue;
         }
 
-        error_at(token->str, "トークナイズできません");
+        error_at(p, "invalid token");
     }
 
     new_token(TK_EOF, cur, p, 0);
