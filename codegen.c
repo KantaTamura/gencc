@@ -91,7 +91,7 @@ void codegen(Node *node) {
     // 変数26個分の領域を確保する
     printf("    push rbp\n");
     printf("    mov rbp, rsp\n");
-    printf("    sub rsp, 208\n"); // 26 * 8
+    printf("    sub rsp, %ld\n", locals ? locals->offset : 0);
 
     // 抽象構文木を下りながらコード生成
     for (Node *n = node; n; n = n->next) {

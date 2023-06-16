@@ -27,6 +27,7 @@ struct Token {
     long len;        // トークンの長さ
 };
 
+
 void error(char *fmt, ...);
 void error_at(const char *loc, char *fmt, ...);
 bool consume(char *op);
@@ -70,7 +71,18 @@ struct Node {
     long offset;   // kindがND_LVARの場合のみ使う
 };
 
+// ローカル変数の型
+typedef struct LVar LVar;
+struct LVar {
+    LVar *next; // 次の変数かNULL
+    char *name; // 変数の名前
+    long len;   // 名前の長さ
+    long offset; // RBPからのオフセット
+};
+
 Node *program();
+
+extern LVar *locals;
 
 //
 // codegen.c
