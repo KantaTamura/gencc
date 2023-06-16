@@ -19,6 +19,7 @@ Node *new_node_num(long val) {
 
 Node *stmt();
 Node *expr();
+Node *assign();
 Node *equality();
 Node *relational();
 Node *add();
@@ -47,9 +48,18 @@ Node *stmt() {
     return node;
 }
 
-// expr = mul ("+" mul | "-" mul)*
+// expr = assign
 Node *expr() {
-    return equality();
+    return assign();
+}
+
+// assign = equality ("=" assign)?
+Node *assign() {
+    Node *node = equality();
+    if (consume("=")) {
+        node = new_node(ND_ASSIGN, node, assign());
+    }
+    return node;
 }
 
 // equality = relational ("==" relational | "!=" relational)*
@@ -129,12 +139,20 @@ Node *unary() {
     return primary();
 }
 
-// primary = num | "(" expr ")"
+// primary = num | ident | "(" expr ")"
 Node *primary() {
     // 次のトークンが"("なら，"(" expr ")"のはず
     if (consume("(")) {
         Node *node = expr();
         expect(")");
+        return node;
+    }
+
+    Token *tok = consume_ident();
+    if (tok) {
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_LVAR;
+        node->offset = (tok->str[0] - 'a' + 1) * 8;
         return node;
     }
 
