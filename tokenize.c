@@ -129,6 +129,11 @@ Token *tokenize() {
                 p++;
             }
             cur = new_token(TK_IDENT, cur, q, p - q);
+
+            if (strncmp(cur->str, "return", cur->len) == 0) {
+                cur->kind = TK_RESERVED;
+            }
+
             continue;
         }
 
