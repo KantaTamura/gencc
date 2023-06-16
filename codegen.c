@@ -1,6 +1,6 @@
 #include "gencc.h"
 
-void gen_lval(Node *node) {
+void gen_lvar(Node *node) {
     if (node->kind != ND_LVAR) {
         error("代入の左辺値が変数ではありません");
     }
@@ -16,13 +16,13 @@ void gen(Node *node) {
             printf("    push %ld\n", node->val);
             return;
         case ND_LVAR:
-            gen_lval(node);
+            gen_lvar(node);
             printf("    pop rax\n");
             printf("    mov rax, [rax]\n");
             printf("    push rax\n");
             return;
         case ND_ASSIGN:
-            gen_lval(node->lhs);
+            gen_lvar(node->lhs);
             gen(node->rhs);
 
             printf("    pop rdi\n");
