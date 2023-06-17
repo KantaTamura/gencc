@@ -57,6 +57,7 @@ typedef enum {
     ND_LE,      // <=
     ND_ASSIGN,  // =
     ND_IF,      // "if"
+    ND_WHILE,   // "while"
     ND_RETURN,  // "return"
     ND_LVAR,    // ローカル変数
     ND_NUM,     // 整数
