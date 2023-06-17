@@ -1,5 +1,7 @@
 #include "gencc.h"
 
+int label_seq = 0;
+
 void gen_lvar(Node *node) {
     if (node->kind != ND_LVAR) {
         error("代入の左辺値が変数ではありません");
@@ -11,13 +13,35 @@ void gen_lvar(Node *node) {
 }
 
 void gen(Node *node) {
-    if (node->kind == ND_RETURN) {
-        gen(node->lhs);
-        printf("    pop rax\n");
-        printf("    mov rsp, rbp\n");
-        printf("    pop rbp\n");
-        printf("    ret\n");
-        return;
+    switch (node->kind) {
+        case ND_IF: {
+            int seq = label_seq++;
+            gen(node->cond);
+            printf("    pop rax\n");
+            printf("    cmp rax, 0\n");
+            if (node->els) {
+                printf("    je .Lelse%d\n", seq);
+                gen(node->then);
+                printf("    jmp .Lend%d\n", seq);
+                printf(".Lelse%d:\n", seq);
+                gen(node->els);
+                printf(".Lend%d:\n", seq);
+            } else {
+                printf("    je .Lend%d\n", seq);
+                gen(node->then);
+                printf(".Lend%d:\n", seq);
+            }
+            return;
+        }
+        case ND_RETURN:
+            gen(node->lhs);
+            printf("    pop rax\n");
+            printf("    mov rsp, rbp\n");
+            printf("    pop rbp\n");
+            printf("    ret\n");
+            return;
+        default:
+            break;
     }
 
     switch (node->kind) {

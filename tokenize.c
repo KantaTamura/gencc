@@ -90,6 +90,27 @@ bool startswith(char *p, char *q) {
     return memcmp(p, q, strlen(q)) == 0;
 }
 
+char *startswith_keyword(char *p) {
+    // keyword
+    static char *kw[] = { "return", "if", "else" };
+
+    for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++) {
+        size_t len = strlen(kw[i]);
+        if (startswith(p, kw[i]) && !isalnum(p[len]))
+            return kw[i];
+    }
+
+    // multi-letter puncture
+    static char *ops[] = { "==", "!=", "<=", ">="};
+
+    for (int i = 0; i < sizeof(ops) / sizeof(*ops); i++) {
+        if (startswith(p, ops[i]))
+            return ops[i];
+    }
+
+    return NULL;
+}
+
 // "user_input"をトークナイズしてそれを返す．
 Token *tokenize() {
     char *p = user_input;
@@ -104,9 +125,11 @@ Token *tokenize() {
             continue;
         }
 
-        if (startswith(p, "==") || startswith(p, "!=") || startswith(p, "<=") || startswith(p, ">=")) {
-            cur = new_token(TK_RESERVED, cur, p, 2);
-            p += 2;
+        char *kw = startswith_keyword(p);
+        if (kw) {
+            size_t len = strlen(kw);
+            cur = new_token(TK_RESERVED, cur, p, (long)len);
+            p += len;
             continue;
         }
 
@@ -129,11 +152,6 @@ Token *tokenize() {
                 p++;
             }
             cur = new_token(TK_IDENT, cur, q, p - q);
-
-            if (strncmp(cur->str, "return", cur->len) == 0) {
-                cur->kind = TK_RESERVED;
-            }
-
             continue;
         }
 

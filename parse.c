@@ -54,16 +54,31 @@ Node *program() {
 }
 
 // stmt = expr ";"
+//      | "if" "(" expr ")" stmt ( "else" stmt )?
 //      | "return" expr ";"
 Node *stmt() {
-    Node *node;
     if (consume("return")) {
-        node = calloc(1, sizeof(Node));
+        Node *node = calloc(1, sizeof(Node));
         node->kind = ND_RETURN;
         node->lhs = expr();
-    } else {
-        node = expr();
+        expect(";");
+        return node;
     }
+
+    if (consume("if")) {
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_IF;
+        expect("(");
+        node->cond = expr();
+        expect(")");
+        node->then = stmt();
+        if (consume("else")) {
+            node->els = stmt();
+        }
+        return node;
+    }
+
+    Node *node = expr();
     expect(";");
     return node;
 }
