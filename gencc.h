@@ -60,6 +60,7 @@ typedef enum {
     ND_WHILE,   // "while"
     ND_FOR,     // "for"
     ND_RETURN,  // "return"
+    ND_BLOCK,   // "{" ... "}"
     ND_LVAR,    // ローカル変数
     ND_NUM,     // 整数
 } NodeKind;
@@ -80,6 +81,9 @@ struct Node {
     // "for"
     Node *init;    // 初期化
     Node *inc;     //
+
+    // "block"
+    Node *body;
 
     long val;      // kindがND_NUMの場合のみ使う
     long offset;   // kindがND_LVARの場合のみ使う
