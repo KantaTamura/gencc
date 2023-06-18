@@ -223,7 +223,9 @@ Node *unary() {
     return primary();
 }
 
-// primary = num | ident | "(" expr ")"
+// primary = num
+//         | ident ( "(" ")" )?
+//         | "(" expr ")"
 Node *primary() {
     // 次のトークンが"("なら，"(" expr ")"のはず
     if (consume("(")) {
@@ -235,6 +237,13 @@ Node *primary() {
     Token *tok = consume_ident();
     if (tok) {
         Node *node = calloc(1, sizeof(Node));
+        if (consume("(")) {
+            expect(")");
+            node->kind = ND_FUNCALL;
+            node->funcname = strndup(tok->str, tok->len);
+            return node;
+        }
+
         node->kind = ND_LVAR;
 
         LVar *lvar = find_lvar(tok);

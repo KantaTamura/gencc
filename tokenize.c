@@ -26,6 +26,13 @@ void error_at(const char *loc, char *fmt, ...) {
     exit(1);
 }
 
+// 指定した長さの文字列をコピーする
+char *strndup(char *p, long len) {
+    char *buf = malloc(len + 1);
+    strncpy(buf, p, len);
+    buf[len] = '\0';
+    return buf;
+}
 // 次のトークンが期待している記号のときは，トークンを1つ読み進めて真を返す．
 // それ以外の場合には偽を返す．
 bool consume(char *op) {

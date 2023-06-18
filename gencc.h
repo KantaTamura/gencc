@@ -30,6 +30,7 @@ struct Token {
 
 void error(char *fmt, ...);
 void error_at(const char *loc, char *fmt, ...);
+char *strndup(char *p, long len);
 bool consume(char *op);
 Token *consume_ident();
 void expect(char *op);
@@ -61,6 +62,7 @@ typedef enum {
     ND_FOR,     // "for"
     ND_RETURN,  // "return"
     ND_BLOCK,   // "{" ... "}"
+    ND_FUNCALL, // 関数呼び出し
     ND_LVAR,    // ローカル変数
     ND_NUM,     // 整数
 } NodeKind;
@@ -84,6 +86,9 @@ struct Node {
 
     // "block"
     Node *body;
+
+    // function call
+    char *funcname;
 
     long val;      // kindがND_NUMの場合のみ使う
     long offset;   // kindがND_LVARの場合のみ使う
