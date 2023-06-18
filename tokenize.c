@@ -92,7 +92,7 @@ bool startswith(char *p, char *q) {
 
 char *startswith_keyword(char *p) {
     // keyword
-    static char *kw[] = { "return", "if", "else", "while"};
+    static char *kw[] = { "return", "if", "else", "while", "for"};
 
     for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++) {
         size_t len = strlen(kw[i]);
