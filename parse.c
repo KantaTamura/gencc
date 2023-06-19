@@ -1,6 +1,6 @@
 #include "gencc.h"
 
-LVar *locals;
+Var *locals;
 
 // 新しいノードを作成して，kindを設定する．
 Node *new_node(NodeKind kind) {
@@ -31,14 +31,30 @@ Node *new_num(long val) {
     return node;
 }
 
+// 変数を持つ葉を生成する．
+Node *new_var(Var *var) {
+    Node *node = new_node(ND_VAR);
+    node->var = var;
+    return node;
+}
+
 // ローカル変数を名前で検索する．
-LVar *find_lvar(Token *tok) {
-    for (LVar *var = locals; var; var = var->next) {
-        if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
+Var *find_var(Token *tok) {
+    for (Var *var = locals; var; var = var->next) {
+        if (strlen(var->name) == tok->len && !memcmp(tok->str, var->name, tok->len)) {
             return var;
         }
     }
     return NULL;
+}
+
+// ローカル変数を追加する．
+Var *push_var(char *name) {
+    Var *var = calloc(1, sizeof(Var));
+    var->next = locals;
+    var->name = name;
+    locals = var;
+    return var;
 }
 
 Node *stmt();
@@ -249,23 +265,11 @@ Node *primary() {
             return node;
         }
 
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_LVAR;
-
-        LVar *lvar = find_lvar(tok);
-        if (lvar) {
-            node->offset = lvar->offset;
-        } else {
-            lvar = calloc(1, sizeof(LVar));
-            lvar->next = locals;
-            lvar->name = tok->str;
-            lvar->len = tok->len;
-            lvar->offset = locals ? locals->offset + 8 : 8;
-            node->offset = lvar->offset;
-            locals = lvar;
+        Var *var = find_var(tok);
+        if (!var) {
+            var = push_var(strndup(tok->str, tok->len));
         }
-
-        return node;
+        return new_var(var);
     }
 
     // そうでなければ数値のはず

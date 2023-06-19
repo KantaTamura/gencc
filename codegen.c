@@ -2,13 +2,13 @@
 
 int label_seq = 0;
 
-void gen_lvar(Node *node) {
-    if (node->kind != ND_LVAR) {
+void gen_var(Node *node) {
+    if (node->kind != ND_VAR) {
         error("代入の左辺値が変数ではありません");
     }
 
     printf("    mov rax, rbp\n");
-    printf("    sub rax, %ld\n", node->offset);
+    printf("    sub rax, %d\n", node->var->offset);
     printf("    push rax\n");
 }
 
@@ -88,14 +88,14 @@ void gen(Node *node) {
         case ND_NUM:
             printf("    push %ld\n", node->val);
             return;
-        case ND_LVAR:
-            gen_lvar(node);
+        case ND_VAR:
+            gen_var(node);
             printf("    pop rax\n");
             printf("    mov rax, [rax]\n");
             printf("    push rax\n");
             return;
         case ND_ASSIGN:
-            gen_lvar(node->lhs);
+            gen_var(node->lhs);
             gen(node->rhs);
 
             printf("    pop rdi\n");
@@ -164,7 +164,7 @@ void codegen(Node *node) {
     // 変数26個分の領域を確保する
     printf("    push rbp\n");
     printf("    mov rbp, rsp\n");
-    printf("    sub rsp, %ld\n", locals ? locals->offset : 0);
+    printf("    sub rsp, %d\n", offsets);
 
     // 抽象構文木を下りながらコード生成
     for (Node *n = node; n; n = n->next) {
