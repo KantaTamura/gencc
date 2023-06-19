@@ -87,7 +87,24 @@ void gen(Node *node) {
             for (int i = nargs - 1; i >= 0; i--)
                 printf("    pop %s\n", argreg[i]);
 
+            // 関数呼び出しをする前にRSPが16の倍数になっている必要がある．
+            // push, popは8バイトRSPをずらすため，それを補正する
+            int seq = label_seq++;
+            printf("    mov rax, rsp\n");       // rax <= rsp
+            printf("    and rax, 15\n");        // rax <= rax & 0b1111
+            printf("    jnz .Lcall%d\n", seq);  // rax is not 0 => jump .Lcall
+            // if ( rsp 下位4bit = 0b0000 )
+            printf("    mov rax, 0\n");
             printf("    call %s\n", node->funcname);
+            printf("    jmp .Lend%d\n", seq);
+            // if ( rsp が16の倍数でない )
+            printf("    .Lcall%d:\n", seq);
+            printf("    sub rsp, 8\n");         // rsp <= rsp - 8 : 16の倍数へ
+            printf("    mov rax, 0\n");
+            printf("    call %s\n", node->funcname);
+            printf("    add rsp, 8\n");         // rsp <= rsp + 8 : もとに戻す
+
+            printf(".Lend%d:\n", seq);
             printf("    push rax\n");
             return;
         }
