@@ -4,7 +4,7 @@ int label_seq = 0;
 
 void gen_var(Node *node) {
     if (node->kind != ND_VAR) {
-        error("代入の左辺値が変数ではありません");
+        error("not a variable");
     }
 
     printf("    mov rax, rbp\n");
