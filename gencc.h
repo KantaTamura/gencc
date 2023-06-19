@@ -35,6 +35,7 @@ bool consume(char *op);
 Token *consume_ident();
 void expect(char *op);
 long expect_number();
+char *expect_ident();
 bool at_eof();
 Token *new_token(TokenKind kind, Token *cur, char *str, long len);
 Token *tokenize();
@@ -105,17 +106,19 @@ struct Node {
 };
 
 // プログラム本体を管理する型
-typedef struct Program Program;
-struct Program {
-    Node *node;     // プログラム本体
+typedef struct Function Function;
+struct Function {
+    Function *next; // 次の関数
+    char *name;     // 関数名
+    Node *node;     // 関数の構文木
     Var *locals;    // ローカル変数のリスト
     int stack_size; // ローカル変数で使用するスタックサイズ
 };
 
-Program *program();
+Function *program();
 
 //
 // codegen.c
 //
 
-void codegen(Program *prog);
+void codegen(Function *prog);
