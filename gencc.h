@@ -50,9 +50,15 @@ extern Token *token;
 // ローカル変数の型
 typedef struct Var Var;
 struct Var {
-    Var *next;  // 次の変数かNULL
     char *name; // 変数の名前
     int offset; // RBPからのオフセット
+};
+
+// ローカル変数のリスト
+typedef struct VarList VarList;
+struct VarList {
+    VarList *next;  // 次の変数
+    Var *var;       // 変数
 };
 
 // 抽象構文木のノードの種類
@@ -110,8 +116,10 @@ typedef struct Function Function;
 struct Function {
     Function *next; // 次の関数
     char *name;     // 関数名
+    VarList *params;// 関数の引数リスト
+
     Node *node;     // 関数の構文木
-    Var *locals;    // ローカル変数のリスト
+    VarList *locals;// ローカル変数のリスト
     int stack_size; // ローカル変数で使用するスタックサイズ
 };
 

@@ -206,6 +206,13 @@ void codegen(Function *prog) {
         printf("    mov rbp, rsp\n");
         printf("    sub rsp, %d\n", fn->stack_size);
 
+        // 関数の引数をスタックにプッシュ
+        int i = 0;
+        for (VarList *vl = fn->params; vl; vl = vl->next) {
+            Var *var = vl->var;
+            printf("    mov [rbp-%d], %s\n", var->offset, argreg[i++]);
+        }
+
         // 抽象構文木を下りながらコード生成
         for (Node *n = fn->node; n; n = n->next) {
             gen(n);
