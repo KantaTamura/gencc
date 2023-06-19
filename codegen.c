@@ -80,6 +80,9 @@ void gen(Node *node) {
             printf("    call %s\n", node->funcname);
             printf("    push rax\n");
             return;
+        case ND_EXPR_STMT:
+            gen(node->lhs);
+            printf("    add rsp, 8\n"); // genの末尾で使用しない値がpopされているので削除する
         case ND_BLOCK: {
             for (Node *n = node->body; n; n = n->next) {
                 gen(n);
@@ -174,10 +177,6 @@ void codegen(Program *prog) {
     // 抽象構文木を下りながらコード生成
     for (Node *n = prog->node; n; n = n->next) {
         gen(n);
-
-        // 式の評価結果としてスタックに一つの値が残っているはずなので，
-        // スタックが溢れないようにポップしておく
-        printf("    pop rax\n");
     }
 
     // epilogue

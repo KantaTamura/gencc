@@ -58,6 +58,7 @@ Var *push_var(char *name) {
 }
 
 Node *stmt();
+Node *read_expr_stmt();
 Node *expr();
 Node *assign();
 Node *equality();
@@ -139,7 +140,7 @@ Node *stmt() {
         Node *node = new_node(ND_FOR);
         expect("(");
         if (!consume(";")) {
-            node->init = expr();
+            node->init = read_expr_stmt();
             expect(";");
         }
         if (!consume(";")) {
@@ -147,16 +148,21 @@ Node *stmt() {
             expect(";");
         }
         if (!consume(")")) {
-            node->inc = expr();
+            node->inc = read_expr_stmt();
             expect(")");
         }
         node->then = stmt();
         return node;
     }
 
-    Node *node = expr();
+    Node *node = read_expr_stmt();
     expect(";");
     return node;
+}
+
+// スタックにゴミを残さないように追加
+Node *read_expr_stmt() {
+    return new_unary(ND_EXPR_STMT, expr());
 }
 
 // expr = assign
