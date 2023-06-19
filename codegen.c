@@ -155,7 +155,7 @@ void gen(Node *node) {
     printf("    push rax\n");
 }
 
-void codegen(Node *node) {
+void codegen(Program *prog) {
     printf(".intel_syntax noprefix\n");
     printf(".global main\n");
     printf("main:\n");
@@ -164,10 +164,10 @@ void codegen(Node *node) {
     // 変数26個分の領域を確保する
     printf("    push rbp\n");
     printf("    mov rbp, rsp\n");
-    printf("    sub rsp, %d\n", offsets);
+    printf("    sub rsp, %d\n", prog->stack_size);
 
     // 抽象構文木を下りながらコード生成
-    for (Node *n = node; n; n = n->next) {
+    for (Node *n = prog->node; n; n = n->next) {
         gen(n);
 
         // 式の評価結果としてスタックに一つの値が残っているはずなので，

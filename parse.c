@@ -68,7 +68,9 @@ Node *unary();
 Node *primary();
 
 // program = stmt*
-Node *program() {
+Program *program() {
+    locals = NULL;
+
     Node head;
     head.next = NULL;
     Node *cur = &head;
@@ -78,7 +80,10 @@ Node *program() {
         cur = cur->next;
     }
 
-    return head.next;
+    Program *prog = calloc(1, sizeof(Program));
+    prog->node = head.next;
+    prog->locals = locals;
+    return prog;
 }
 
 // stmt = expr ";"

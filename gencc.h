@@ -102,15 +102,18 @@ struct Node {
     Var *var;      // kindがND_LVARの場合のみ使う
 };
 
+// プログラム本体を管理する型
+typedef struct Program Program;
+struct Program {
+    Node *node;     // プログラム本体
+    Var *locals;    // ローカル変数のリスト
+    int stack_size; // ローカル変数で使用するスタックサイズ
+};
 
-
-Node *program();
-
-extern Var *locals;
-extern int offsets;
+Program *program();
 
 //
 // codegen.c
 //
 
-void codegen(Node *node);
+void codegen(Program *prog);

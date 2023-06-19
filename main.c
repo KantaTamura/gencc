@@ -1,7 +1,5 @@
 #include "gencc.h"
 
-int offsets = 0;
-
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         fprintf(stderr, "引数の個数が正しくありません\n");
@@ -11,15 +9,15 @@ int main(int argc, char *argv[]) {
     // トークナイズしてパースする
     user_input = argv[1];
     token = tokenize();
-    Node *node = program();
+    Program *prog = program();
 
     int offset = 0;
-    for (Var *var = locals; var; var = var->next) {
+    for (Var *var = prog->locals; var; var = var->next) {
         offset += 8;
         var->offset = offset;
     }
-    offsets = offset;
+    prog->stack_size = offset;
 
-    codegen(node);
+    codegen(prog);
     return 0;
 }
