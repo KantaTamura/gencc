@@ -66,6 +66,7 @@ Node *relational();
 Node *add();
 Node *mul();
 Node *unary();
+Node *func_args();
 Node *primary();
 
 // program = stmt*
@@ -256,8 +257,24 @@ Node *unary() {
     return primary();
 }
 
+// func_args = "(" ( assign ( "," assign )* )? ")"
+Node *func_args() {
+    if (consume(")"))
+        return NULL;
+
+    Node *head = assign();
+    Node *cur = head;
+    while (consume(",")) {
+        cur->next = assign();
+        cur = cur->next;
+    }
+
+    expect(")");
+    return head;
+}
+
 // primary = num
-//         | ident ( "(" ")" )?
+//         | ident func_args?
 //         | "(" expr ")"
 Node *primary() {
     // 次のトークンが"("なら，"(" expr ")"のはず
@@ -270,9 +287,9 @@ Node *primary() {
     Token *tok = consume_ident();
     if (tok) {
         if (consume("(")) {
-            expect(")");
             Node *node = new_node(ND_FUNCALL);
             node->funcname = strndup(tok->str, tok->len);
+            node->args = func_args();
             return node;
         }
 

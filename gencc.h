@@ -98,6 +98,7 @@ struct Node {
 
     // function call
     char *funcname;
+    Node *args;
 
     long val;      // kindがND_NUMの場合のみ使う
     Var *var;      // kindがND_LVARの場合のみ使う
