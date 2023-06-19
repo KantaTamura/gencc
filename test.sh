@@ -65,6 +65,8 @@ assert 3 'return foo = 3;'
 assert 3 'return foo123 = 3;'
 assert 6 'foo = 1; bar = 2 + 3; return foo + bar;'
 
+assert 2 'foo_bar = 2; return foo_bar;'
+
 assert 3 'if (0) return 2; return 3;'
 assert 3 'if (1-1) return 2; return 3;'
 assert 2 'if (1) return 2; return 3;'
