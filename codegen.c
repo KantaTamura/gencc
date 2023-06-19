@@ -12,6 +12,19 @@ void gen_var(Node *node) {
     printf("    push rax\n");
 }
 
+void load() {
+    printf("    pop rax\n");
+    printf("    mov rax, [rax]\n");
+    printf("    push rax\n");
+}
+
+void store() {
+    printf("    pop rdi\n");
+    printf("    pop rax\n");
+    printf("    mov [rax], rdi\n");
+    printf("    push rdi\n");
+}
+
 void gen(Node *node) {
     switch (node->kind) {
         case ND_IF: {
@@ -90,18 +103,12 @@ void gen(Node *node) {
             return;
         case ND_VAR:
             gen_var(node);
-            printf("    pop rax\n");
-            printf("    mov rax, [rax]\n");
-            printf("    push rax\n");
+            load();
             return;
         case ND_ASSIGN:
             gen_var(node->lhs);
             gen(node->rhs);
-
-            printf("    pop rdi\n");
-            printf("    pop rax\n");
-            printf("    mov [rax], rdi\n");
-            printf("    push rdi\n");
+            store();
             return;
         default:
             break;
