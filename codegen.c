@@ -89,9 +89,7 @@ void gen(Node *node) {
         case ND_RETURN:
             gen(node->lhs);
             printf("    pop rax\n");
-            printf("    mov rsp, rbp\n");
-            printf("    pop rbp\n");
-            printf("    ret\n");
+            printf("    jmp .Lreturn\n");
             return;
         default:
             break;
@@ -183,9 +181,9 @@ void codegen(Program *prog) {
     }
 
     // epilogue
-    // 最後の式の結果がRAXに残っているのでそれが返り値になる
+    // ND_RETURN ノードからジャンプする
+    printf(".Lreturn:\n");
     printf("    mov rsp, rbp\n");
     printf("    pop rbp\n");
-
     printf("    ret\n");
 }
