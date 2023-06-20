@@ -6,7 +6,7 @@ char *funcname;
 
 void gen_var(Node *node) {
     if (node->kind != ND_VAR) {
-        error("not a variable");
+        error_tok(node->tok, "not a variable");
     }
 
     printf("    mov rax, rbp\n");
@@ -186,7 +186,7 @@ void gen(Node *node) {
             break;
         default:
             // unreachable
-            error("invalid node");
+            error_tok(node->tok, "invalid node");
     }
 
     printf("    push rax\n");
@@ -225,6 +225,4 @@ void codegen(Function *prog) {
         printf("    pop rbp\n");
         printf("    ret\n");
     }
-
-
 }
