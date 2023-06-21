@@ -38,6 +38,7 @@ void error(char *fmt, ...);
 void error_at(const char *loc, char *fmt, ...);
 void error_tok(Token *tok, char *fmt, ...);
 char *strndup(char *p, long len);
+Token *peek(char *op);
 Token *consume(char *op);
 Token *consume_ident();
 void expect(char *op);

@@ -40,13 +40,17 @@ void error_tok(Token *tok, char *fmt, ...) {
     exit(1);
 }
 
-// 次のトークンが期待している記号のときは，トークンを1つ読み進めて真を返す．
-// それ以外の場合には偽を返す．
-Token *consume(char *op) {
-    if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0) {
+// 次のトークンが期待している記号のときは，そのトークンを返す
+Token *peek(char *s) {
+    if (token->kind != TK_RESERVED || strlen(s) != token->len || memcmp(token->str, s, token->len) != 0)
         return NULL;
-    }
+    return token;
+}
 
+// 次のトークンが期待している記号のときは，トークンを1つ読み進めて真を返す．
+Token *consume(char *s) {
+    if (!peek(s))
+        return NULL;
     Token *t = token;
     token = token->next;
     return t;
@@ -65,10 +69,9 @@ Token *consume_ident() {
 
 // 次のトークンが期待している記号のときは，トークンを1つ読み進める．
 // それ以外の場合にはエラーを報告する．
-void expect(char *op) {
-    if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0) {
-        error_tok(token, "expect '%c'", op);
-    }
+void expect(char *s) {
+    if (!peek(s))
+        error_tok(token, "expected \"%s\"", s);
 
     token = token->next;
 }
