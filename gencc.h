@@ -58,6 +58,7 @@ extern Token *token;
 // ローカル変数の型
 struct Var {
     char *name; // 変数の名前
+    Type *ty;   // 変数の型
     int offset; // RBPからのオフセット
 };
 
@@ -89,6 +90,7 @@ typedef enum {
     ND_EXPR_STMT,   // 最後に必要ない値をpushする式
     ND_VAR,         // ローカル変数
     ND_NUM,         // 整数
+    ND_NULL,        // 空文
 } NodeKind;
 
 // 抽象構文木のノード型
@@ -145,6 +147,8 @@ struct Type {
     Type *base;
 };
 
+Type *int_type();
+Type *pointer_to(Type *base);
 void add_type(Function *prog);
 
 //

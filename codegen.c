@@ -38,6 +38,8 @@ void store() {
 
 void gen(Node *node) {
     switch (node->kind) {
+        case ND_NULL:
+            return;
         case ND_IF: {
             int seq = label_seq++;
             gen(node->cond);
