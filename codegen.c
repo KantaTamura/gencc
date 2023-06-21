@@ -4,14 +4,23 @@ int label_seq = 0;
 char *argreg[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 char *funcname;
 
+void gen(Node *node);
+
 void gen_var(Node *node) {
-    if (node->kind != ND_VAR) {
-        error_tok(node->tok, "not a variable");
+    switch (node->kind) {
+        case ND_VAR:
+            printf("    mov rax, rbp\n");
+            printf("    sub rax, %d\n", node->var->offset);
+            printf("    push rax\n");
+            return;
+        case ND_DEREF:
+            gen(node->lhs);
+            return;
+        default:
+            break;
     }
 
-    printf("    mov rax, rbp\n");
-    printf("    sub rax, %d\n", node->var->offset);
-    printf("    push rax\n");
+    error_tok(node->tok, "not a variable");
 }
 
 void load() {
@@ -128,6 +137,13 @@ void gen(Node *node) {
     }
 
     switch (node->kind) {
+        case ND_ADDR:
+            gen_var(node->lhs);
+            return;
+        case ND_DEREF:
+            gen(node->lhs);
+            load();
+            return;
         case ND_NUM:
             printf("    push %ld\n", node->val);
             return;
