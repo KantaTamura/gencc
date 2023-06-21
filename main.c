@@ -9,6 +9,7 @@ int main(int argc, char *argv[]) {
     user_input = argv[1];
     token = tokenize();
     Function *prog = program();
+    add_type(prog);
 
     // offsetを計算
     for (Function *fn = prog; fn; fn = fn->next) {

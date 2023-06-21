@@ -5,6 +5,13 @@
 #include<stdlib.h>
 #include<string.h>
 
+typedef struct Token Token;
+typedef struct Var Var;
+typedef struct VarList VarList;
+typedef struct Node Node;
+typedef struct Function Function;
+typedef struct Type Type;
+
 //
 // tokenize.c
 //
@@ -18,7 +25,6 @@ typedef enum {
 } TokenKind;
 
 // トークン型
-typedef struct Token Token;
 struct Token {
     TokenKind kind; // トークンの型
     Token *next;    // 次の入力トークン
@@ -49,14 +55,12 @@ extern Token *token;
 //
 
 // ローカル変数の型
-typedef struct Var Var;
 struct Var {
     char *name; // 変数の名前
     int offset; // RBPからのオフセット
 };
 
 // ローカル変数のリスト
-typedef struct VarList VarList;
 struct VarList {
     VarList *next;  // 次の変数
     Var *var;       // 変数
@@ -87,10 +91,10 @@ typedef enum {
 } NodeKind;
 
 // 抽象構文木のノード型
-typedef struct Node Node;
 struct Node {
     NodeKind kind; // ノードの型
     Node *next;    // 次のノード
+    Type *ty;      // int or pointer to int
     Token *tok;    // トークン
 
     Node *lhs;     // 左辺
@@ -117,7 +121,6 @@ struct Node {
 };
 
 // プログラム本体を管理する型
-typedef struct Function Function;
 struct Function {
     Function *next; // 次の関数
     char *name;     // 関数名
@@ -129,6 +132,19 @@ struct Function {
 };
 
 Function *program();
+
+//
+// type.c
+//
+
+typedef enum { TY_INT, TY_PTR } TypeKind;
+
+struct Type {
+    TypeKind kind;
+    Type *base;
+};
+
+void add_type(Function *prog);
 
 //
 // codegen.c
