@@ -1,3 +1,4 @@
+#include<assert.h>
 #include<ctype.h>
 #include<stdarg.h>
 #include<stdbool.h>
@@ -59,7 +60,7 @@ extern Token *token;
 struct Var {
     char *name; // 変数の名前
     Type *ty;   // 変数の型
-    int offset; // RBPからのオフセット
+    long offset; // RBPからのオフセット
 };
 
 // ローカル変数のリスト
@@ -131,7 +132,7 @@ struct Function {
 
     Node *node;     // 関数の構文木
     VarList *locals;// ローカル変数のリスト
-    int stack_size; // ローカル変数で使用するスタックサイズ
+    long stack_size;// ローカル変数で使用するスタックサイズ
 };
 
 Function *program();
@@ -140,15 +141,18 @@ Function *program();
 // type.c
 //
 
-typedef enum { TY_INT, TY_PTR } TypeKind;
+typedef enum { TY_INT, TY_PTR, TY_ARRAY } TypeKind;
 
 struct Type {
     TypeKind kind;
     Type *base;
+    long array_size;
 };
 
 Type *int_type();
 Type *pointer_to(Type *base);
+Type *array_of(Type *base, long size);
+long size_of(Type *ty);
 void add_type(Function *prog);
 
 //

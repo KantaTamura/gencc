@@ -6,11 +6,11 @@ char *funcname;
 
 void gen(Node *node);
 
-void gen_var(Node *node) {
+void gen_addr(Node *node) {
     switch (node->kind) {
         case ND_VAR:
             printf("    mov rax, rbp\n");
-            printf("    sub rax, %d\n", node->var->offset);
+            printf("    sub rax, %ld\n", node->var->offset);
             printf("    push rax\n");
             return;
         case ND_DEREF:
@@ -34,6 +34,12 @@ void store() {
     printf("    pop rax\n");
     printf("    mov [rax], rdi\n");
     printf("    push rdi\n");
+}
+
+void gen_lval(Node *node) {
+    if (node->ty->kind == TY_ARRAY)
+        error_tok(node->tok, "not an lvalue");
+    gen_addr(node);
 }
 
 void gen(Node *node) {
@@ -140,21 +146,23 @@ void gen(Node *node) {
 
     switch (node->kind) {
         case ND_ADDR:
-            gen_var(node->lhs);
+            gen_addr(node->lhs);
             return;
         case ND_DEREF:
             gen(node->lhs);
-            load();
+            if (node->ty->kind != TY_ARRAY)
+                load();
             return;
         case ND_NUM:
             printf("    push %ld\n", node->val);
             return;
         case ND_VAR:
-            gen_var(node);
-            load();
+            gen_addr(node);
+            if (node->ty->kind != TY_ARRAY)
+                load();
             return;
         case ND_ASSIGN:
-            gen_var(node->lhs);
+            gen_lval(node->lhs);
             gen(node->rhs);
             store();
             return;
@@ -170,13 +178,13 @@ void gen(Node *node) {
 
     switch (node->kind) {
         case ND_ADD:
-            if (node->ty->kind == TY_PTR)
-                printf("    imul rdi, 8\n"); // ptr + x => (ptr + x*8)
+            if (node->ty->base)
+                printf("    imul rdi, %ld\n", size_of(node->ty->base)); // ptr + x => (ptr + x*8)
             printf("    add rax, rdi\n");
             break;
         case ND_SUB:
-            if (node->ty->kind == TY_PTR)
-                printf("    imul rdi, 8\n"); // ptr - x => (ptr - x*8)
+            if (node->ty->base)
+                printf("    imul rdi, %ld\n", size_of(node->ty->base)); // ptr - x => (ptr - x*8)
             printf("    sub rax, rdi\n");
             break;
         case ND_MUL:
@@ -226,13 +234,13 @@ void codegen(Function *prog) {
         // 変数26個分の領域を確保する
         printf("    push rbp\n");
         printf("    mov rbp, rsp\n");
-        printf("    sub rsp, %d\n", fn->stack_size);
+        printf("    sub rsp, %ld\n", fn->stack_size);
 
         // 関数の引数をスタックにプッシュ
         int i = 0;
         for (VarList *vl = fn->params; vl; vl = vl->next) {
             Var *var = vl->var;
-            printf("    mov [rbp-%d], %s\n", var->offset, argreg[i++]);
+            printf("    mov [rbp-%ld], %s\n", var->offset, argreg[i++]);
         }
 
         // 抽象構文木を下りながらコード生成
