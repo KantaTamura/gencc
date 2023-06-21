@@ -1,0 +1,11 @@
+name: auto-test
+on: [push]
+jobs:
+  make-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: make test
+        run: make test
