@@ -142,7 +142,8 @@ void gen(Node *node) {
         case ND_EXPR_STMT:
             gen(node->lhs);
             printf("    add rsp, 8\n"); // genの末尾で使用しない値がpopされているので削除する
-        case ND_BLOCK: {
+        case ND_BLOCK:
+        case ND_STMT_EXPR: {
             for (Node *n = node->body; n; n = n->next) {
                 gen(n);
             }

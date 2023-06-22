@@ -102,6 +102,7 @@ typedef enum {
     ND_BLOCK,       // "{" ... "}"
     ND_FUNCALL,     // 関数呼び出し
     ND_EXPR_STMT,   // 最後に必要ない値をpushする式
+    ND_STMT_EXPR,   // 文の中にある式
     ND_VAR,         // ローカル変数
     ND_NUM,         // 整数
     ND_NULL,        // 空文
@@ -126,7 +127,7 @@ struct Node {
     Node *init;    // 初期化
     Node *inc;     //
 
-    // "block"
+    // "block" or "stmt-expr"
     Node *body;
 
     // function call
