@@ -152,7 +152,12 @@ Program *program();
 // type.c
 //
 
-typedef enum { TY_INT, TY_PTR, TY_ARRAY } TypeKind;
+typedef enum {
+    TY_CHAR,
+    TY_INT,
+    TY_PTR,
+    TY_ARRAY
+} TypeKind;
 
 struct Type {
     TypeKind kind;
@@ -160,6 +165,7 @@ struct Type {
     long array_size;
 };
 
+Type *char_type();
 Type *int_type();
 Type *pointer_to(Type *base);
 Type *array_of(Type *base, long size);

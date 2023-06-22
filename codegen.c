@@ -1,7 +1,8 @@
 #include "gencc.h"
 
 int label_seq = 0;
-char *argreg[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
+char *argreg1[] = { "dil", "sil", "dl", "cl", "r8b", "r9b" };
+char *argreg8[] = { "rdi", "rsi", "rdx", "rcx", "r8", "r9" };
 char *funcname;
 
 void gen(Node *node);
@@ -29,16 +30,22 @@ void gen_addr(Node *node) {
     error_tok(node->tok, "not a variable");
 }
 
-void load() {
+void load(Type *ty) {
     printf("    pop rax\n");
-    printf("    mov rax, [rax]\n");
+    if (size_of(ty) == 1)
+        printf("    movsx rax, byte ptr [rax]\n");
+    else
+        printf("    mov rax, [rax]\n");
     printf("    push rax\n");
 }
 
-void store() {
+void store(Type *ty) {
     printf("    pop rdi\n");
     printf("    pop rax\n");
-    printf("    mov [rax], rdi\n");
+    if (size_of(ty) == 1)
+        printf("    mov [rax], dil\n");
+    else
+        printf("    mov [rax], rdi\n");
     printf("    push rdi\n");
 }
 
@@ -109,7 +116,7 @@ void gen(Node *node) {
             }
 
             for (int i = nargs - 1; i >= 0; i--)
-                printf("    pop %s\n", argreg[i]);
+                printf("    pop %s\n", argreg8[i]);
 
             // 関数呼び出しをする前にRSPが16の倍数になっている必要がある．
             // push, popは8バイトRSPをずらすため，それを補正する
@@ -157,7 +164,7 @@ void gen(Node *node) {
         case ND_DEREF:
             gen(node->lhs);
             if (node->ty->kind != TY_ARRAY)
-                load();
+                load(node->ty);
             return;
         case ND_NUM:
             printf("    push %ld\n", node->val);
@@ -165,12 +172,12 @@ void gen(Node *node) {
         case ND_VAR:
             gen_addr(node);
             if (node->ty->kind != TY_ARRAY)
-                load();
+                load(node->ty);
             return;
         case ND_ASSIGN:
             gen_lval(node->lhs);
             gen(node->rhs);
-            store();
+            store(node->ty);
             return;
         default:
             break;
@@ -238,6 +245,16 @@ void emit_data(Program *prog) {
     }
 }
 
+void load_arg(Var *var, int idx) {
+    long size = size_of(var->ty);
+    if (size == 1) {
+        printf("    mov [rbp-%ld], %s\n", var->offset, argreg1[idx]);
+    } else {
+        assert(size == 8);
+        printf("    mov [rbp-%ld], %s\n", var->offset, argreg8[idx]);
+    }
+}
+
 void emit_text(Program *prog) {
     printf(".text\n");
 
@@ -255,8 +272,7 @@ void emit_text(Program *prog) {
         // 関数の引数をスタックにプッシュ
         int i = 0;
         for (VarList *vl = fn->params; vl; vl = vl->next) {
-            Var *var = vl->var;
-            printf("    mov [rbp-%ld], %s\n", var->offset, argreg[i++]);
+            load_arg(vl->var, i++);
         }
 
         // 抽象構文木を下りながらコード生成

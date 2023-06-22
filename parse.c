@@ -140,10 +140,16 @@ void global_var() {
     push_var(name, ty, false);
 }
 
-// basetype = "int" "*"*
+// basetype = ("int" | "char") "*"*
 Type *basetype() {
-    expect("int");
-    Type *ty = int_type();
+    Type *ty;
+    if (consume("char")) {
+        ty = char_type();
+    } else {
+        expect("int");
+        ty = int_type();
+    }
+
     while (consume("*"))
         ty = pointer_to(ty);
     return ty;
@@ -232,6 +238,11 @@ Node *declaration() {
     return new_unary(ND_EXPR_STMT, node, tok);
 }
 
+// typename = "int" | "char"
+bool is_typename() {
+    return peek("int") || peek("char");
+}
+
 // stmt = expr ";"
 //      | declaration
 //      | "{" stmt* "}"
@@ -302,7 +313,7 @@ Node *stmt() {
         return node;
     }
 
-    if ((tok = peek("int")))
+    if (is_typename())
         return declaration();
 
     Node *node = read_expr_stmt();
