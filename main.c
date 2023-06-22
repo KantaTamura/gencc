@@ -8,11 +8,11 @@ int main(int argc, char *argv[]) {
     // トークナイズしてパースする
     user_input = argv[1];
     token = tokenize();
-    Function *prog = program();
+    Program *prog = program();
     add_type(prog);
 
     // offsetを計算
-    for (Function *fn = prog; fn; fn = fn->next) {
+    for (Function *fn = prog->fns; fn; fn = fn->next) {
         long offset = 0;
         for (VarList *vl = fn->locals; vl; vl = vl->next) {
             Var *var = vl->var;

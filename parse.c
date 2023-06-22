@@ -1,6 +1,7 @@
 #include "gencc.h"
 
 VarList *locals;
+VarList *globals;
 
 // 新しいノードを作成して，kindを設定する．
 Node *new_node(NodeKind kind, Token *tok) {
@@ -47,23 +48,41 @@ Var *find_var(Token *tok) {
             return var;
         }
     }
+
+    for (VarList *vl = globals; vl; vl = vl->next) {
+        Var *var = vl->var;
+        if (strlen(var->name) == tok->len && !memcmp(tok->str, var->name, tok->len)) {
+            return var;
+        }
+    }
+
     return NULL;
 }
 
 // ローカル変数を追加する．
-Var *push_var(char *name, Type *ty) {
+Var *push_var(char *name, Type *ty, bool is_local) {
     Var *var = calloc(1, sizeof(Var));
     var->name = name;
     var->ty = ty;
+    var->is_local = is_local;
 
     VarList *vl = calloc(1, sizeof(VarList));
     vl->var = var;
-    vl->next = locals;
-    locals = vl;
+
+    if (is_local) {
+        vl->next = locals;
+        locals = vl;
+    } else {
+        vl->next = globals;
+        globals = vl;
+    }
+
     return var;
 }
 
+bool is_function();
 Type *basetype();
+void global_var();
 Type *read_type_suffix(Type *base);
 VarList *read_func_param();
 VarList *read_func_params();
@@ -82,18 +101,43 @@ Node *postfix();
 Node *func_args();
 Node *primary();
 
-// program = function*
-Function *program() {
+// program = (global-var | function)*
+Program *program() {
     Function head;
     head.next = NULL;
     Function *cur = &head;
+    globals = NULL;
 
     while (!at_eof()) {
-        cur->next = function();
-        cur = cur->next;
+        if (is_function()) {
+            cur->next = function();
+            cur = cur->next;
+        } else {
+            global_var();
+        }
     }
 
-    return head.next;
+    Program *prog = calloc(1, sizeof(Program));
+    prog->global = globals;
+    prog->fns = head.next;
+    return prog;
+}
+
+bool is_function() {
+    Token *tok = token;
+    basetype();
+    bool isfunc = consume_ident() && consume("(");
+    token = tok;
+    return isfunc;
+}
+
+// global-var = basetype ident suffix ";"
+void global_var() {
+    Type *ty = basetype();
+    char *name = expect_ident();
+    ty = read_type_suffix(ty);
+    expect(";");
+    push_var(name, ty, false);
 }
 
 // basetype = "int" "*"*
@@ -123,7 +167,7 @@ VarList *read_func_param() {
     ty = read_type_suffix(ty);
 
     VarList *vl = calloc(1, sizeof(VarList));
-    vl->var = push_var(name, ty);
+    vl->var = push_var(name, ty, true);
     return vl;
 }
 
@@ -175,7 +219,7 @@ Node *declaration() {
     Type *ty = basetype();
     char *name = expect_ident();
     ty = read_type_suffix(ty);
-    Var *var = push_var(name, ty);
+    Var *var = push_var(name, ty, true);
 
     if (consume(";"))
         return new_node(ND_NULL, tok);

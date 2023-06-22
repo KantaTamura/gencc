@@ -11,6 +11,7 @@ typedef struct Var Var;
 typedef struct VarList VarList;
 typedef struct Node Node;
 typedef struct Function Function;
+typedef struct Program Program;
 typedef struct Type Type;
 
 //
@@ -56,11 +57,14 @@ extern Token *token;
 // parse.c
 //
 
-// ローカル変数の型
+// 変数の型
 struct Var {
-    char *name; // 変数の名前
-    Type *ty;   // 変数の型
-    long offset; // RBPからのオフセット
+    char *name;     // 変数の名前
+    Type *ty;       // 変数の型
+    bool is_local;  // ローカル変数かどうか
+
+    // ローカル変数の場合のみ
+    long offset;    // RBPからのオフセット
 };
 
 // ローカル変数のリスト
@@ -125,7 +129,7 @@ struct Node {
     Var *var;      // kindがND_LVARの場合のみ使う
 };
 
-// プログラム本体を管理する型
+// 関数本体
 struct Function {
     Function *next; // 次の関数
     char *name;     // 関数名
@@ -136,7 +140,13 @@ struct Function {
     long stack_size;// ローカル変数で使用するスタックサイズ
 };
 
-Function *program();
+// プログラム本体
+struct Program {
+    VarList *global;    // グローバル変数
+    Function *fns;      // 関数のリスト
+};
+
+Program *program();
 
 //
 // type.c
@@ -154,10 +164,10 @@ Type *int_type();
 Type *pointer_to(Type *base);
 Type *array_of(Type *base, long size);
 long size_of(Type *ty);
-void add_type(Function *prog);
+void add_type(Program *prog);
 
 //
 // codegen.c
 //
 
-void codegen(Function *prog);
+void codegen(Program *prog);
