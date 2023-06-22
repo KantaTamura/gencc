@@ -85,6 +85,7 @@ typedef enum {
     ND_IF,          // "if"
     ND_WHILE,       // "while"
     ND_FOR,         // "for"
+    ND_SIZEOF,      // "sizeof"
     ND_RETURN,      // "return"
     ND_BLOCK,       // "{" ... "}"
     ND_FUNCALL,     // 関数呼び出し

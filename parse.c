@@ -412,6 +412,7 @@ Node *func_args() {
 // primary = num
 //         | ident func_args?
 //         | "(" expr ")"
+//         | "sizeof" unary
 Node *primary() {
     // 次のトークンが"("なら，"(" expr ")"のはず
     if (consume("(")) {
@@ -434,6 +435,10 @@ Node *primary() {
             error_tok(tok, "undefined variable");
         }
         return new_var(var, tok);
+    }
+
+    if ((tok = consume("sizeof"))) {
+        return new_unary(ND_SIZEOF, unary(), tok);
     }
 
     tok = token;
