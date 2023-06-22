@@ -1,5 +1,6 @@
 #include "gencc.h"
 
+char *filename;
 char *user_input;
 Token *token;
 
@@ -13,8 +14,28 @@ void error(char *fmt, ...) {
 }
 
 // エラー箇所を報告する
-void verror_at(const char *loc, char *fmt, va_list ap) {
-    long pos = loc - user_input;
+void verror_at(char *loc, char *fmt, va_list ap) {
+    // find a line containing 'loc'
+    char *line = loc;
+    while (user_input < line && line[-1] != '\n')
+        line--;
+
+    char *end = loc;
+    while (*end != '\n')
+        end++;
+
+    // get a line number
+    int line_num = 1;
+    for (char *p = user_input; p < line; p++)
+        if (*p == '\n')
+            line_num++;
+
+    // print out the line
+    int indent = fprintf(stderr, "%s:%d: ", filename, line_num);
+    fprintf(stderr, "%.*s\n", (int)(end - line), line);
+
+    // show the error message
+    long pos = loc - line + indent;
     fprintf(stderr, "%s\n", user_input);
     fprintf(stderr, "%*s", (int)pos, ""); // pos個の空白を出力
     fprintf(stderr, "^ ");
@@ -23,7 +44,7 @@ void verror_at(const char *loc, char *fmt, va_list ap) {
     exit(1);
 }
 
-void error_at(const char *loc, char *fmt, ...) {
+void error_at(char *loc, char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     verror_at(loc, fmt, ap);

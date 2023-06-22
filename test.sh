@@ -14,7 +14,7 @@ assert() {
   expected="$1"
   input="$2"
 
-  ./gencc "$input" > tmp.s
+  ./gencc <(echo "$input") > tmp.s
   cc -static -o tmp tmp.s tmp2.o
   ./tmp
   actual="$?"

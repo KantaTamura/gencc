@@ -1,5 +1,6 @@
 #include<assert.h>
 #include<ctype.h>
+#include<errno.h>
 #include<stdarg.h>
 #include<stdbool.h>
 #include<stdio.h>
@@ -41,7 +42,7 @@ struct Token {
 
 
 void error(char *fmt, ...);
-void error_at(const char *loc, char *fmt, ...);
+void error_at(char *loc, char *fmt, ...);
 void error_tok(Token *tok, char *fmt, ...);
 char *strndup(char *p, long len);
 Token *peek(char *op);
@@ -54,6 +55,7 @@ bool at_eof();
 Token *new_token(TokenKind kind, Token *cur, char *str, long len);
 Token *tokenize();
 
+extern char *filename;
 extern char *user_input;
 extern Token *token;
 
