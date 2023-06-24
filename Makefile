@@ -8,7 +8,9 @@ gencc: $(OBJS)
 $(OBJS): gencc.h
 
 test: gencc
-	./test.sh
+	./gencc tests > tmp.s
+	gcc -static -o tmp tmp.s
+	./tmp
 
 clean:
 	rm -f gencc *.o *~ tmp*

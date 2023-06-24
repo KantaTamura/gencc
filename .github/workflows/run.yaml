@@ -7,8 +7,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: permission
-        run: chmod +x ./test.sh
-
       - name: make test
         run: make test
