@@ -236,6 +236,20 @@ Token *tokenize() {
             continue;
         }
 
+        if (startswith(p, "//")) {
+            p += 2;
+            while (*p != '\n') p++;
+            continue;
+        }
+
+        if (startswith(p, "/*")) {
+            char *q = strstr(p + 2, "*/");
+            if (!q)
+                error_at(p, "unclosed block comment");
+            p = q + 2;
+            continue;
+        }
+
         char *kw = startswith_keyword(p);
         if (kw) {
             size_t len = strlen(kw);
