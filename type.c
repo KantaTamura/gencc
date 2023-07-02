@@ -36,8 +36,21 @@ long size_of(Type *ty) {
             return 8;
         case TY_ARRAY:
             return size_of(ty->base) * ty->array_size;
+        case TY_STRUCT: {
+            Member *mem = ty->members;
+            while (mem->next)
+                mem = mem->next;
+            return mem->offset + size_of(mem->ty);
+        }
     }
     error("unknown type");
+}
+
+Member *find_member(Type *ty, char *name) {
+    for (Member *mem = ty->members; mem; mem = mem->next)
+        if (!strcmp(mem->name, name))
+            return mem;
+    return NULL;
 }
 
 void visit(Node *node) {
@@ -89,6 +102,14 @@ void visit(Node *node) {
             return;
         case ND_ASSIGN:
             node->ty = node->lhs->ty;
+            return;
+        case ND_MEMBER:
+            if (node->lhs->ty->kind != TY_STRUCT)
+                error_tok(node->tok, "not a struct");
+            node->member = find_member(node->lhs->ty, node->member_name);
+            if (!node->member)
+                error_tok(node->tok, "no such member");
+            node->ty = node->member->ty;
             return;
         case ND_ADDR:
             if (node->lhs->ty->kind == TY_ARRAY)

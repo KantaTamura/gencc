@@ -14,6 +14,7 @@ typedef struct Node Node;
 typedef struct Function Function;
 typedef struct Program Program;
 typedef struct Type Type;
+typedef struct Member Member;
 
 //
 // tokenize.c
@@ -94,6 +95,7 @@ typedef enum {
     ND_LT,          // <
     ND_LE,          // <=
     ND_ASSIGN,      // =
+    ND_MEMBER,      // . (構造体のメンバへのアクセス)
     ND_ADDR,        // unary &
     ND_DEREF,       // unary *
     ND_IF,          // "if"
@@ -132,6 +134,10 @@ struct Node {
     // "block" or "stmt-expr"
     Node *body;
 
+    // struct member access
+    char *member_name;
+    Member *member;
+
     // function call
     char *funcname;
     Node *args;
@@ -167,13 +173,22 @@ typedef enum {
     TY_CHAR,
     TY_INT,
     TY_PTR,
-    TY_ARRAY
+    TY_ARRAY,
+    TY_STRUCT,
 } TypeKind;
 
 struct Type {
     TypeKind kind;
-    Type *base;
-    long array_size;
+    Type *base;         // pointer or array
+    long array_size;    // array
+    Member *members;    // struct
+};
+
+struct Member {
+    Member *next;
+    Type *ty;
+    char *name;
+    long offset;
 };
 
 Type *char_type();

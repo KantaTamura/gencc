@@ -88,12 +88,15 @@ char *new_label() {
 
 bool is_function();
 Type *basetype();
+Type *struct_decl();
+Member *struct_member();
 void global_var();
 Type *read_type_suffix(Type *base);
 VarList *read_func_param();
 VarList *read_func_params();
 Function *function();
 Node *declaration();
+bool is_typename();
 Node *stmt();
 Node *read_expr_stmt();
 Node *expr();
@@ -146,19 +149,61 @@ void global_var() {
     push_var(name, ty, false);
 }
 
-// basetype = ("int" | "char") "*"*
+// basetype = ("int" | "char" | struct-dicl) "*"*
 Type *basetype() {
+    if (!is_typename())
+        error_tok(token, "typename expected");
+
     Type *ty;
-    if (consume("char")) {
+    if (consume("char"))
         ty = char_type();
-    } else {
-        expect("int");
+    else if (consume("int"))
         ty = int_type();
-    }
+    else
+        ty = struct_decl();
 
     while (consume("*"))
         ty = pointer_to(ty);
     return ty;
+}
+
+// struct-decl = "struct" ident? "{" struct-member "}"
+Type *struct_decl() {
+    // Read struct members
+    expect("struct");
+    expect("{");
+
+    Member head;
+    head.next = NULL;
+    Member *cur = &head;
+
+    while (!consume("}")) {
+        cur->next = struct_member();
+        cur = cur->next;
+    }
+
+    Type *ty = calloc(1, sizeof(Type));
+    ty->kind = TY_STRUCT;
+    ty->members = head.next;
+
+    // Assign offsets within the struct to members.
+    int offset = 0;
+    for (Member *mem = ty->members; mem; mem = mem->next) {
+        mem->offset = offset;
+        offset += size_of(mem->ty);
+    }
+
+    return ty;
+}
+
+// struct-member = basetype ident ("[" num "]")* ";"
+Member *struct_member() {
+    Member *mem = calloc(1, sizeof(Member));
+    mem->ty = basetype();
+    mem->name = expect_ident();
+    mem->ty = read_type_suffix(mem->ty);
+    expect(";");
+    return mem;
 }
 
 // suffix = ( "[" num "]" )*
@@ -244,9 +289,9 @@ Node *declaration() {
     return new_unary(ND_EXPR_STMT, node, tok);
 }
 
-// typename = "int" | "char"
+// typename = "int" | "char" | "struct"
 bool is_typename() {
-    return peek("int") || peek("char");
+    return peek("int") || peek("char") || peek("struct");
 }
 
 // stmt = expr ";"
@@ -443,18 +488,28 @@ Node *unary() {
     return postfix();
 }
 
-// postfix = primary ("[" expr "]")*
+// postfix = primary ("[" expr "]" | "." ident)*
 Node *postfix() {
     Node *node = primary();
     Token *tok;
 
-    while ((tok = consume("["))) {
-        // x[y] => *(x+y)
-        Node *exp = new_binary(ND_ADD, node, expr(), tok);
-        expect("]");
-        node = new_unary(ND_DEREF, exp, tok);
+    for (;;) {
+        if ((tok = consume("["))) {
+            // x[y] is short for *(x+y)
+            Node *exp = new_binary(ND_ADD, node, expr(), tok);
+            expect("]");
+            node = new_unary(ND_DEREF, exp, tok);
+            continue;
+        }
+
+        if ((tok = consume("."))) {
+            node = new_unary(ND_MEMBER, node, tok);
+            node->member_name = expect_ident();
+            continue;
+        }
+
+        return node;
     }
-    return node;
 }
 
 // func_args = "(" ( assign ( "," assign )* )? ")"

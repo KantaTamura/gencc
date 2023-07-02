@@ -141,7 +141,7 @@ bool startswith(char *p, char *q) {
 char *startswith_keyword(char *p) {
     // keyword
     static char *kw[] = { "return", "if", "else", "while", "for", "int",
-                          "sizeof", "char" };
+                          "sizeof", "char", "struct" };
 
     for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++) {
         size_t len = strlen(kw[i]);
@@ -258,7 +258,7 @@ Token *tokenize() {
             continue;
         }
 
-        if (strchr("+-*/()<>;={},&[]", *p)) {
+        if (strchr("+-*/()<>;={},&[].", *p)) {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
         }
